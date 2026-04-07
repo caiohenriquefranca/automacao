@@ -1,0 +1,53 @@
+---
+// [MermaidChart: 84d76fa5-a8f8-4076-b416-0fd08cbcedf3]
+id: 84d76fa5-a8f8-4076-b416-0fd08cbcedf3
+---
+%% [MermaidChart: 84d76fa5-a8f8-4076-b416-0fd08cbcedf3]
+graph TD
+    %% Estilos
+    classDef start fill:#1e272e,stroke:#485460,color:#fff,stroke-width:2px
+    classDef manual fill:#ffd32a,stroke:#ffa801,color:#000
+    classDef auto fill:#05c46b,stroke:#0be881,color:#fff
+    classDef file fill:#0fbcf9,stroke:#0984e3,color:#fff
+    classDef test fill:#ef5777,stroke:#f53b57,color:#fff
+    classDef portal fill:#575fcf,stroke:#3c40c4,color:#fff
+    classDef decision fill:#ff5e57,stroke:#d63031,color:#fff
+
+    %% ─── FLUXO 1: SETUP DE AUTENTICAÇÃO (rodar 1x por sessão) ───
+
+    A([Início — Primeira vez ou sessão expirada]):::start
+    A --> B["npm run save-auth"]:::auto
+    B --> C["save-auth.js abre browser\nvia playwright-extra + stealth plugin\n(evita detecção de bot)"]:::auto
+    C --> D["Preenche CPF automaticamente\n(process.env.USER_CPF)"]:::auto
+    D --> E["Aguarda 60s\nResolva o CAPTCHA manualmente"]:::manual
+    E --> F{CAPTCHA resolvido?}:::decision
+    F -- Sim --> G["Sessão autenticada no portal\nauth.json salvo em disco"]:::file
+    F -- Não / Timeout --> H["Erro: reiniciar save-auth"]:::start
+
+    %% ─── FLUXO 2: EXECUÇÃO DOS TESTES ───
+
+    G --> I([Sessão pronta — npm test]):::start
+    I --> J["Projeto 'setup':\nportal-login.spec.js\nvalida que auth.json está ativo"]:::test
+    J --> K{auth.json válido?}:::decision
+    K -- Não --> A
+    K -- Sim --> L["Projeto 'chromium':\nexecuta todos os specs em paralelo"]:::test
+
+    L --> M["beforeEach de cada spec:\npage.goto('/')\nfecharModaisIniciais(page)\n(fecha modais de cookies, news, perfil)"]:::auto
+    M --> N["loginSSO(page)\ndetecta sessão ativa\nreutiliza auth.json sem novo login"]:::auto
+    N --> O["Geração de dados dinâmicos\nfaker-br: CPF, CNPJ, razão social, endereço"]:::auto
+    O --> P["Preenche formulário no portal gov.br\nvia helpers de src/support/form.js\n(preencherCampoTexto, selecionarOpcao,\nuploadPorLabel)"]:::auto
+    P --> Q["Portal processa a solicitação\nPortal Gov.br (SSO GovBr)"]:::portal
+    Q --> R["Spec verifica resultado:\nnúmero de protocolo, mensagem de sucesso,\nou estado esperado da UI"]:::test
+    R --> S{Teste passou?}:::decision
+    S -- Sim --> T([Relatório HTML — npm run report]):::start
+    S -- Não --> U["Playwright salva screenshot + trace\ndiagnóstico disponível no report"]:::file
+    U --> T
+
+    %% ─── LEGENDA ───
+    subgraph Legenda
+        L1[Ação automática]:::auto
+        L2[Ação manual do usuário]:::manual
+        L3[Arquivo gerado]:::file
+        L4[Passo de teste / spec]:::test
+        L5[Portal externo]:::portal
+    end

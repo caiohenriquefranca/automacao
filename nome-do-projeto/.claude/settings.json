@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx playwright*)",
+      "Bash(npm run *)",
+      "Bash(node src/support/save-auth.js)",
+      "Bash(node *)",
+      "Bash(mkdir -p *)",
+      "Bash(touch *)",
+      "Bash(ls *)",
+      "Bash(find src *)",
+      "Bash(cat *)"
+    ],
+    "deny": []
+  }
+}

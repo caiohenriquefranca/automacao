@@ -1,0 +1,13 @@
+node_modules/
+
+# Credenciais e sessão autenticada — nunca commitar
+.env
+auth.json
+
+# Artefatos gerados pelos testes
+playwright-report/
+test-results/
+
+# Cache do sistema
+.DS_Store
+*.log

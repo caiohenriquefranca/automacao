@@ -1,0 +1,1 @@
+- [Projeto de Automação](project-context.md) — Template Playwright gov.br baseado no portal-pw (SVS/GovOne)
